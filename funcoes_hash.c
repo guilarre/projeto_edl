@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#define TABLE_SIZE 3
+#define TABLE_SIZE 11
 
 //struct de cada user pra inserir na lista do array
 typedef struct No {
@@ -44,10 +44,11 @@ void hash_criptografia(const char *senha, char *senha_hash) {
     sprintf(senha_hash, "%lx", hash); //transforma o hash (que é um long) em hex, dentro de senha_hash
 }
 
+// params: tabela de nós (ptr de ptr), email e senha já hasheada
 void insere_hash(No *tabela[], char *email, char *senha_hash){
     int indice = cria_hash(valor_str(email));
 
-    No *novo = (No *) malloc(sizeof(No));
+    No *novo = malloc(sizeof(No));
 
     strcpy(novo->email, email);
     strcpy(novo->senha_hash, senha_hash);
