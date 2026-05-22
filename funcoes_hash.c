@@ -57,6 +57,46 @@ void insere_hash(No *tabela[], char *email, char *senha_hash){
     tabela[indice] = novo;
 }
 
+
+No* busca_hash(No *tabela[], char *email) {
+    int indice = cria_hash(valor_str(email));
+    No *atual = tabela[indice];
+
+    
+    while (atual != NULL) {
+        if (strcmp(atual->email, email) == 0) {
+            return atual; 
+        }
+        atual = atual->prox;
+    }
+    return NULL; 
+}
+
+
+int remove_hash(No *tabela[], char *email) {
+    int indice = cria_hash(valor_str(email));
+    No *atual = tabela[indice];
+    No *anterior = NULL;
+
+    
+    while (atual != NULL) {
+        if (strcmp(atual->email, email) == 0) {
+            if (anterior == NULL) {
+                
+                tabela[indice] = atual->prox;
+            } else {
+                
+                anterior->prox = atual->prox;
+            }
+            free(atual);
+            return 1; 
+        }
+        anterior = atual;
+        atual = atual->prox;
+    }
+    return 0; 
+}
+
 void libera_hash(No *tabela[]){
     for (int i = 0; i < TABLE_SIZE; i++){
         No *atual = tabela[i];
