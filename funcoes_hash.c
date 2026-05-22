@@ -57,44 +57,38 @@ void insere_hash(No *tabela[], char *email, char *senha_hash){
     tabela[indice] = novo;
 }
 
-
 No* busca_hash(No *tabela[], char *email) {
     int indice = cria_hash(valor_str(email));
     No *atual = tabela[indice];
 
-    
     while (atual != NULL) {
         if (strcmp(atual->email, email) == 0) {
-            return atual; 
+            return atual;
         }
         atual = atual->prox;
     }
-    return NULL; 
+    return NULL;
 }
-
 
 int remove_hash(No *tabela[], char *email) {
     int indice = cria_hash(valor_str(email));
     No *atual = tabela[indice];
     No *anterior = NULL;
 
-    
     while (atual != NULL) {
         if (strcmp(atual->email, email) == 0) {
             if (anterior == NULL) {
-                
                 tabela[indice] = atual->prox;
             } else {
-                
                 anterior->prox = atual->prox;
             }
             free(atual);
-            return 1; 
+            return 1;
         }
         anterior = atual;
         atual = atual->prox;
     }
-    return 0; 
+    return 0; //erro
 }
 
 void libera_hash(No *tabela[]){
