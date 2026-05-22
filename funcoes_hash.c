@@ -1,3 +1,5 @@
+#include <ctype.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +14,13 @@ typedef struct No {
 
     struct No *prox;
 } No;
+
+void inicializar_tabela(No **tabela) {
+    //inicializa NULL em todas as posiçoes
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        tabela[i] = NULL;
+    }
+}
 
 // Função pra transformar string em valor numérico
 unsigned int valor_str(char *str) {
@@ -42,6 +51,17 @@ void hash_criptografia(const char *senha, char *senha_hash) {
         hash = ((hash << 5) + hash) + (int) senha[i]; //hash * 33 + carac atual
     }
     sprintf(senha_hash, "%lx", hash); //transforma o hash (que é um long) em hex, dentro de senha_hash
+}
+
+// vai retornar 0 se tiver problema, 1 se ok
+int valida_senha(const char *senha) {
+    int tamanho = strlen(senha);
+
+    if (tamanho < 4 || tamanho > 6) return 0;
+    for (int i = 0; i < tamanho; i++)
+        if (!isdigit((unsigned char)senha[i])) return 0; //unsigned char lida com casos de carac com acento
+
+    return 1; //caso passe em tudo
 }
 
 // params: tabela de nós (ptr de ptr), email e senha já hasheada
@@ -147,11 +167,7 @@ void imprime_tabela(No *tabela[]) {
 
 int main() {
     No *tabela[TABLE_SIZE];
-
-    //inicializa NULL em todas as posiçoes
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        tabela[i] = NULL;
-    }
+    inicializar_tabela(tabela);
 
     // DEBUG====================================================================
     char senha_hasheada[30];
