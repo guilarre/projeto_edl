@@ -1,9 +1,11 @@
+#include <ctype.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#define TABLE_SIZE 3
+#define TABLE_SIZE 11
 
 //struct de cada user pra inserir na lista do array
 typedef struct No {
@@ -12,6 +14,13 @@ typedef struct No {
 
     struct No *prox;
 } No;
+
+void inicializar_tabela(No **tabela) {
+    //inicializa NULL em todas as posiçoes
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        tabela[i] = NULL;
+    }
+}
 
 // Função pra transformar string em valor numérico
 unsigned int valor_str(char *str) {
@@ -44,16 +53,62 @@ void hash_criptografia(const char *senha, char *senha_hash) {
     sprintf(senha_hash, "%lx", hash); //transforma o hash (que é um long) em hex, dentro de senha_hash
 }
 
+// vai retornar 0 se tiver problema, 1 se ok
+int valida_senha(const char *senha) {
+    int tamanho = strlen(senha);
+
+    if (tamanho < 4 || tamanho > 6) return 0;
+    for (int i = 0; i < tamanho; i++)
+        if (!isdigit((unsigned char)senha[i])) return 0; //unsigned char lida com casos de carac com acento
+
+    return 1; //caso passe em tudo
+}
+
+// params: tabela de nós (ptr de ptr), email e senha já hasheada
 void insere_hash(No *tabela[], char *email, char *senha_hash){
     int indice = cria_hash(valor_str(email));
 
-    No *novo = (No *) malloc(sizeof(No));
+    No *novo = malloc(sizeof(No));
 
     strcpy(novo->email, email);
     strcpy(novo->senha_hash, senha_hash);
 
     novo->prox = tabela[indice];
     tabela[indice] = novo;
+}
+
+No* busca_hash(No *tabela[], char *email) {
+    int indice = cria_hash(valor_str(email));
+    No *atual = tabela[indice];
+
+    while (atual != NULL) {
+        if (strcmp(atual->email, email) == 0) {
+            return atual;
+        }
+        atual = atual->prox;
+    }
+    return NULL;
+}
+
+int remove_hash(No *tabela[], char *email) {
+    int indice = cria_hash(valor_str(email));
+    No *atual = tabela[indice];
+    No *anterior = NULL;
+
+    while (atual != NULL) {
+        if (strcmp(atual->email, email) == 0) {
+            if (anterior == NULL) {
+                tabela[indice] = atual->prox;
+            } else {
+                anterior->prox = atual->prox;
+            }
+            free(atual);
+            return 1;
+        }
+        anterior = atual;
+        atual = atual->prox;
+    }
+    return 0; //erro
 }
 
 void libera_hash(No *tabela[]){
@@ -112,11 +167,7 @@ void imprime_tabela(No *tabela[]) {
 
 int main() {
     No *tabela[TABLE_SIZE];
-
-    //inicializa NULL em todas as posiçoes
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        tabela[i] = NULL;
-    }
+    inicializar_tabela(tabela);
 
     // DEBUG====================================================================
     char senha_hasheada[30];
