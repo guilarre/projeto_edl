@@ -165,47 +165,113 @@ void imprime_tabela(No *tabela[]) {
     printf("\n================================\n");
 }
 
+void menu(No *tabela[]) {
+    int opcao = -1;
+    char email[100];
+    char senha[50];
+    char senha_hash[30];
+    No *usuario_encontrado = NULL;
+
+    do {
+        printf("\n--- SISTEMA DE AUTENTICACAO ---\n");
+        printf("1. Cadastrar Usuario\n");
+        printf("2. Login\n");
+        printf("3. Remover Usuario\n");
+        printf("4. Imprimir Tabela\n");
+        printf("0. Sair\n");
+        printf("Escolha uma opcao: ");
+        
+        if (scanf("%d", &opcao) != 1) {
+            printf("Opcao invalida!\n");
+            while (getchar() != '\n');
+            continue;
+        }
+        getchar();
+
+        switch (opcao) {
+            case 1:
+                printf("\n--- CADASTRO ---\n");
+                printf("Digite o username/email: ");
+                fgets(email, sizeof(email), stdin);
+                email[strcspn(email, "\n")] = '\0'; 
+
+                if (busca_hash(tabela, email) != NULL) {
+                    printf("Erro: Este usuario ja esta cadastrado!\n");
+                    break;
+                }
+
+                printf("Digite a senha (4 a 6 digitos numericos): ");
+                fgets(senha, sizeof(senha), stdin);
+                senha[strcspn(senha, "\n")] = '\0';
+
+                if (!valida_senha(senha)) {
+                    printf("Erro: Senha invalida! Use de 4 a 6 digitos numericos.\n");
+                } else {
+                    hash_criptografia(senha, senha_hash);
+                    insere_hash(tabela, email, senha_hash);
+                    printf("Usuario cadastrado com sucesso!\n");
+                }
+                break;
+
+            case 2:
+                printf("\n--- LOGIN ---\n");
+                printf("Digite o username/email: ");
+                fgets(email, sizeof(email), stdin);
+                email[strcspn(email, "\n")] = '\0';
+
+                printf("Digite a senha: ");
+                fgets(senha, sizeof(senha), stdin);
+                senha[strcspn(senha, "\n")] = '\0';
+
+                usuario_encontrado = busca_hash(tabela, email);
+
+                if (usuario_encontrado != NULL) {
+                    hash_criptografia(senha, senha_hash);
+                    if (strcmp(usuario_encontrado->senha_hash, senha_hash) == 0) {
+                        printf("Login efetuado com sucesso! Bem-vindo, %s.\n", usuario_encontrado->email);
+                    } else {
+                        printf("Erro: Senha incorreta!\n");
+                    }
+                } else {
+                    printf("Erro: Usuario nao encontrado!\n");
+                }
+                break;
+
+            case 3:
+                printf("\n--- REMOVER USUARIO ---\n");
+                printf("Digite o username/email que deseja remover: ");
+                fgets(email, sizeof(email), stdin);
+                email[strcspn(email, "\n")] = '\0';
+
+                if (remove_hash(tabela, email)) {
+                    printf("Usuario removido com sucesso!\n");
+                } else {
+                    printf("Erro: Usuario nao encontrado na tabela.\n");
+                }
+                break;
+
+            case 4:
+                imprime_tabela(tabela);
+                break;
+
+            case 0:
+                printf("Saindo do sistema e liberando memoria...\n");
+                libera_hash(tabela);
+                printf("Programa encerrado.\n");
+                break;
+
+            default:
+                printf("Opcao invalida! Tente novamente.\n");
+        }
+    } while (opcao != 0);
+}
+
 int main() {
     No *tabela[TABLE_SIZE];
-    inicializar_tabela(tabela);
+    
+    inicializar_tabela(tabela);// todos os índices com NULL
 
-    // DEBUG====================================================================
-    char senha_hasheada[30];
-
-    hash_criptografia("Minhasupersenha1", senha_hasheada);
-    printf("senha hasheada: %s\n", senha_hasheada);
-    int indice_hash = cria_hash(valor_str("guigaraposo2006@gmail.com"));
-    printf("%d\n", indice_hash);
-    insere_hash(tabela, "guigaraposo2006@gmail.com", senha_hasheada);
-
-    printf("\n");
-
-    hash_criptografia("Minhasupersenha2", senha_hasheada);
-    printf("senha hasheada: %s\n", senha_hasheada);
-    indice_hash = cria_hash(valor_str("guigaraposo2005@gmail.com"));
-    printf("%d\n", indice_hash);
-    insere_hash(tabela, "guigaraposo2005@gmail.com", senha_hasheada);
-
-    printf("\n");
-
-    hash_criptografia("Minhasupersenha3", senha_hasheada);
-    printf("senha hasheada: %s\n", senha_hasheada);
-    indice_hash = cria_hash(valor_str("guigaraposo2026@gmail.com"));
-    printf("%d\n", indice_hash);
-    insere_hash(tabela, "guigaraposo2026@gmail.com", senha_hasheada);
-
-    printf("\n");
-
-    hash_criptografia("Minhasupersenha4", senha_hasheada);
-    printf("senha hasheada: %s\n", senha_hasheada);
-    indice_hash = cria_hash(valor_str("guigaraposo2010@gmail.com"));
-    printf("%d\n", indice_hash);
-    insere_hash(tabela, "guigaraposo2010@gmail.com", senha_hasheada);
-
-    printf("\n");
-    //==========================================================================
-
-    imprime_tabela(tabela);
+    menu(tabela);
 
     libera_hash(tabela);
 
