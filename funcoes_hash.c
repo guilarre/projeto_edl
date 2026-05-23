@@ -6,6 +6,7 @@
 #include <math.h>
 
 #define TABLE_SIZE 11
+#define ARQUIVO_DADOS "usuarios.csv"
 
 //struct de cada user pra inserir na lista do array
 typedef struct No {
@@ -28,7 +29,6 @@ unsigned int valor_str(char *str) {
     for (int i = 0; i < strlen(str); i++) {
         valor = 31 * valor + (int) str[i];
     }
-    printf("DEBUG (valor_str): %u\n", valor);
     return valor;
 }
 
@@ -36,7 +36,6 @@ unsigned int valor_str(char *str) {
 int cria_hash(unsigned int valor_str) {
     const double A = 0.6180339887; //inverso do num. áureo
     double parte_fracionaria = fmod((valor_str * A), 1.0);
-    printf("DEBUG (parte frac): %f\n", parte_fracionaria);
     double valor_novo = TABLE_SIZE * (parte_fracionaria);
     int indice = (int) valor_novo;
     return indice;
@@ -165,6 +164,42 @@ void imprime_tabela(No *tabela[]) {
     printf("\n================================\n");
 }
 
+void salvar_dados(No *tabela[], const char *nome_arquivo) {
+    FILE *arquivo = fopen(nome_arquivo, "w");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir arquivo para salvar dados!\n");
+        return;
+    }
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        No *atual = tabela[i];
+        while (atual != NULL) {
+            fprintf(arquivo, "%s;%s\n", atual->email, atual->senha_hash);
+            atual = atual->prox;
+        }
+    }
+    fclose(arquivo);
+    printf("Dados salvos com sucesso em '%s'\n", nome_arquivo);
+}
+
+void carregar_dados(No *tabela[], const char *nome_arquivo) {
+    FILE *arquivo = fopen(nome_arquivo, "r");
+    if (arquivo == NULL) { //se arquivo não existir
+        printf("Arquivo de dados não encontrado. Iniciando tabela de usuários vazia.\n");
+        return;
+    }
+
+    char email[100];
+    char senha_hash[30];
+
+    // na format string abaixo: ' %99[^;]' = 1ª var, ';' = consome do buffer sem atribuir, '%29s' = 2ª var
+    while (fscanf(arquivo, " %99[^;];%29s", email, senha_hash) == 2) {
+        insere_hash(tabela, email, senha_hash);
+    }
+
+    fclose(arquivo);
+    printf("Dados lidos com sucesso de %s.\n", nome_arquivo);
+}
+
 void menu(No *tabela[]) {
     int opcao = -1;
     char email[100];
@@ -180,7 +215,7 @@ void menu(No *tabela[]) {
         printf("4. Imprimir Tabela\n");
         printf("0. Sair\n");
         printf("Escolha uma opcao: ");
-        
+
         if (scanf("%d", &opcao) != 1) {
             printf("Opcao invalida!\n");
             while (getchar() != '\n');
@@ -256,6 +291,7 @@ void menu(No *tabela[]) {
 
             case 0:
                 printf("Saindo do sistema e liberando memoria...\n");
+                salvar_dados(tabela, ARQUIVO_DADOS);
                 libera_hash(tabela);
                 printf("Programa encerrado.\n");
                 break;
@@ -268,12 +304,12 @@ void menu(No *tabela[]) {
 
 int main() {
     No *tabela[TABLE_SIZE];
-    
+
     inicializar_tabela(tabela);// todos os índices com NULL
 
-    menu(tabela);
+    carregar_dados(tabela, ARQUIVO_DADOS);
 
-    libera_hash(tabela);
+    menu(tabela);
 
     return 0;
 }
