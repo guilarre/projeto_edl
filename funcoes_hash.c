@@ -8,7 +8,7 @@
 //struct de cada user pra inserir na lista do array
 typedef struct No {
     char email[100];
-    char senha_hash[100];
+    char senha_hash[30];
 
     struct No *prox;
 } No;
