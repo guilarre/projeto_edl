@@ -16,7 +16,7 @@ typedef struct No {
     struct No *prox;
 } No;
 
-void inicializar_tabela(No **tabela) {
+void inicializar_tabela(No *tabela[]) {
     //inicializa NULL em todas as posiçoes
     for (int i = 0; i < TABLE_SIZE; i++) {
         tabela[i] = NULL;
